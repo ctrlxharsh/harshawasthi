@@ -15,6 +15,7 @@ export interface Project {
         github?: string;
         demo?: string;
         paper?: string;
+        slides?: string;
     };
     showInTimeline: boolean;
     researchOutput?: string; // ID of related research
@@ -28,6 +29,7 @@ export interface Research {
     type: ResearchType;
     venue: string;
     year: number;
+    date?: string; // ISO string YYYY-MM-DD for sorting/display
     shortContribution: string;
     relatedProjectId?: string;
     links: {

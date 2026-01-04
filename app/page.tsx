@@ -52,7 +52,11 @@ export default function Home() {
             <div key={item.id} className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-accent/50 transition-all flex flex-col">
               <div className="flex items-start justify-between gap-4 mb-2">
                 <span className="text-xs font-medium text-accent uppercase shrink-0 bg-accent/10 px-2 py-1 rounded">{item.type}</span>
-                <span className="text-xs text-muted-foreground">{item.year}</span>
+                <span className="text-xs text-muted-foreground">
+                  {item.date
+                    ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                    : item.year}
+                </span>
               </div>
               <h3 className="font-bold text-foreground mb-2">{item.title}</h3>
               <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">{item.shortContribution}</p>
@@ -114,7 +118,7 @@ export default function Home() {
                   {item.type}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  {new Date(item.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
               </div>
               <h3 className="font-bold text-foreground mb-1">{item.title}</h3>

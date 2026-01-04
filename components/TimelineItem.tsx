@@ -23,7 +23,7 @@ export default function TimelineItem({ entry, index }: { entry: TimelineEntry; i
                             {entry.type}
                         </span>
                         <span className="text-xs text-muted-foreground font-mono">
-                            {entry.date}
+                            {new Date(entry.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </span>
                     </div>
 
