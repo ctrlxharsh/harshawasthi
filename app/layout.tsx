@@ -55,7 +55,6 @@ export const metadata: Metadata = {
     canonical: 'https://ctrlxharsh.github.io',
   },
   verification: {
-    // Add your Google Search Console verification code here
     google: 'l1kbiK6FCEK0qs2REkSevNIHTnSOxlPvytea7Pa9Fqc',
   },
 };

@@ -44,7 +44,7 @@ export interface TimelineEntry {
     id: string;
     date: string;
     title: string;
-    type: "project" | "research" | "event" | "experience" | "manual" | "education" | "award";
+    type: "project" | "research" | "experience" | "manual" | "education" | "award" | "activity" | "achievement";
     description: string;
     relatedId?: string; // Link to the original item
     image?: string;

@@ -9,17 +9,17 @@ export default function SocialLinks() {
         },
         {
             name: "LinkedIn",
-            href: "https://linkedin.com/in/ctrlxharsh", // Assuming this, user can update
-            icon: "https://simpleicons.org/icons/linkedin.svg",
+            href: "https://www.linkedin.com/in/harsh-awasthi-746b64277/",
+            icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-plain.svg",
         },
         {
             name: "X (Twitter)",
-            href: "https://x.com/ctrlxharsh", // Assuming this, user can update
+            href: "https://x.com/HarshAwasthik",
             icon: "https://simpleicons.org/icons/x.svg",
         },
         {
             name: "Email",
-            href: "mailto:harsh@example.com", // Placeholder
+            href: "mailto:harsh.awasthik@gmail.com",
             icon: "https://simpleicons.org/icons/gmail.svg",
         },
     ];

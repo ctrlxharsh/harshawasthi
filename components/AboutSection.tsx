@@ -31,7 +31,7 @@ export default function AboutSection() {
                         </li>
                         <li className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">Experience</span>
-                            <span className="text-sm font-medium text-foreground">3+ Years</span>
+                            <span className="text-sm font-medium text-foreground">2+ Years</span>
                         </li>
                         <li className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">Location</span>
