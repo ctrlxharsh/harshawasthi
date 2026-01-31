@@ -2,7 +2,7 @@
 
 Personal portfolio website showcasing my work in Computer Vision, Agentic AI, and Robotics.
 
-🔗 **Live Site**: [ctrlxharsh.github.io](https://ctrlxharsh.github.io)
+🔗 **Live Site**: [harshawasthi.in](https://harshawasthi.in)
 
 ## Tech Stack
 
