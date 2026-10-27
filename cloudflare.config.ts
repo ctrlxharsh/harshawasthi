@@ -9,6 +9,9 @@ export default defineConfig({
     assets: { htmlHandling: 'none', notFoundHandling: 'none', runWorkerFirst: ['/*', '!/_next/static/*', '!/*/_next/static/*'] },
     observability: {
       enabled: false,
+      logs: { enabled: true },
+      traces: { enabled: true },
+      issues: { enabled: true },
     },
     env: {
       ASSETS: bindings.assets(),
