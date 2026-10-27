@@ -1,63 +1,76 @@
-import Link from "next/link";
-import Image from "next/image";
-import SocialLinks from "./SocialLinks";
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import type { Portfolio } from '@/lib/content';
+import { coverRadius, lensPath } from '@/lib/lens';
 
-export default function Hero() {
-    return (
-        <section className="min-h-[80vh] flex flex-col justify-center px-6 max-w-5xl mx-auto pt-24">
-            <div className="flex flex-col-reverse md:flex-row md:items-center gap-8 md:gap-16">
-                <div className="space-y-8 flex-1">
-                    <div className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400">
-                        <img
-                            src="https://simpleicons.org/icons/researchgate.svg"
-                            alt=""
-                            className="w-4 h-4 mr-2"
-                        />
-                        Available for Research Collaborations
-                    </div>
-
-                    <h1 className="font-outfit text-5xl md:text-7xl font-bold tracking-tight text-foreground">
-                        Engineering Intelligence <br />
-                        <span className="text-muted-foreground">at the Edge.</span>
-                    </h1>
-
-                    <p className="max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed">
-                        I'm <span className="text-foreground font-semibold">Harsh</span>, an AI Engineer & Researcher specializing in
-                        <span className="text-accent"> Computer Vision</span>, <span className="text-accent">Agentic AI</span>, and <span className="text-accent">Robotics</span>.
-                        Building systems that bridge the gap between research and reality.
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-6 pt-2">
-                        <div className="flex gap-4">
-                            <Link
-                                href="/projects"
-                                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
-                            >
-                                View Projects
-                            </Link>
-                            <Link
-                                href="/research"
-                                className="inline-flex items-center justify-center rounded-full border border-neutral-200 bg-transparent px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-900"
-                            >
-                                Research
-                            </Link>
-                        </div>
-                        <SocialLinks />
-                    </div>
-                </div>
-
-                <div className="group relative w-32 h-32 md:w-56 md:h-56 flex-shrink-0 mx-auto md:mx-0 cursor-pointer">
-                    <div className="absolute inset-0 rounded-full border-2 border-neutral-200 dark:border-neutral-800 rotate-6 transform transition-all duration-500 group-hover:rotate-12 group-hover:scale-105 group-hover:border-accent/50"></div>
-                    <div className="rounded-full overflow-hidden w-full h-full border-4 border-white dark:border-neutral-900 shadow-xl relative z-10 bg-neutral-100 transition-all duration-500 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-accent/20">
-                        <Image
-                            src="/me/me.webp"
-                            alt="Harsh Profile"
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+export default function Hero({ profile, open, setOpen, canEdit, onEdit }: { profile: Portfolio['profile']; open: boolean; setOpen: (open: boolean) => void; canEdit: boolean; onEdit: () => void }) {
+  const hero = useRef<HTMLDivElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const aboutButton = useRef<HTMLButtonElement>(null);
+  const aboutPaper = useRef<HTMLDivElement>(null);
+  const lens = useRef<SVGPathElement>(null);
+  const reveal = useRef<HTMLDivElement>(null);
+  const switching = useRef(false);
+  const position = useRef({ x: 0, y: 0, tailX: 0, tailY: 0, frame: 0 });
+  useEffect(() => { if (open) closeButton.current?.focus(); }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => { if (!aboutPaper.current?.contains(event.target as Node)) setOpen(false); };
+    const closeEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); aboutButton.current?.focus(); } };
+    document.addEventListener('pointerdown', closeOutside); document.addEventListener('keydown', closeEscape);
+    return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', closeEscape); };
+  }, [open, setOpen]);
+  useEffect(() => () => cancelAnimationFrame(position.current.frame), []);
+  const [showHindi, setShowHindi] = useState(false);
+  const switchLanguage = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (switching.current || !hero.current || !reveal.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShowHindi(value => !value); return; }
+    const box = hero.current.getBoundingClientRect(), button = event.currentTarget.getBoundingClientRect();
+    const x = button.left + button.width / 2 - box.left, y = button.top + button.height / 2 - box.top;
+    const radius = coverRadius(x, y, box.width, box.height);
+    switching.current = true;
+    const animation = reveal.current.animate([
+      { clipPath: `circle(0px at ${x}px ${y}px)`, opacity: 1 },
+      { clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 1 },
+    ], { duration: 650, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'forwards' });
+    void animation.finished.then(() => {
+      setShowHindi(value => !value);
+      requestAnimationFrame(() => { animation.cancel(); switching.current = false; });
+    });
+  };
+  const drawLens = () => {
+    const p = position.current, radius = Math.min(240, Math.max(130, window.innerWidth * .17));
+    const dx = p.x - p.tailX, dy = p.y - p.tailY, distance = Math.hypot(dx, dy);
+    const trail = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Math.min(distance, 80);
+    lens.current?.setAttribute('d', lensPath(p.x, p.y, p.tailX, p.tailY, radius, trail));
+    p.tailX += dx * .25; p.tailY += dy * .25;
+    p.frame = trail && distance > .5 ? requestAnimationFrame(drawLens) : 0;
+  };
+  const move = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect(), p = position.current;
+    p.x = event.clientX - rect.left; p.y = event.clientY - rect.top;
+    cancelAnimationFrame(p.frame); drawLens();
+  };
+  const pattern = <div className="hero-pattern" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <div key={i}>H A R S H A W A S T H I &nbsp; H A R S H A W A S T H I</div>)}</div>;
+  return <section id="about" className={`hero ${open ? 'is-open' : ''}`}>
+    <div className="hero-flip">
+      <div className={`hero-face hero-front ${showHindi ? 'hindi-active' : ''}`} ref={hero} inert={open} onPointerMove={event => { if (event.pointerType === 'mouse') move(event); }} onPointerEnter={event => { if (event.pointerType === 'mouse') { const rect = event.currentTarget.getBoundingClientRect(); position.current.tailX = event.clientX - rect.left; position.current.tailY = event.clientY - rect.top; move(event); hero.current?.classList.add('pointer-active'); } }} onPointerLeave={() => hero.current?.classList.remove('pointer-active')}>
+        {pattern}
+        <h1 aria-live="polite" lang={showHindi ? 'hi' : undefined}>{showHindi ? profile.hindi : profile.greeting}</h1>
+        <svg className="lens-defs" aria-hidden="true"><defs><clipPath id="hero-lens" clipPathUnits="userSpaceOnUse"><path ref={lens} /></clipPath></defs></svg>
+        <div className="hero-reveal" ref={reveal} aria-hidden="true">{pattern}<span lang={showHindi ? undefined : 'hi'}>{showHindi ? profile.greeting : profile.hindi}</span></div>
+        <button className="hindi-toggle" type="button" onClick={switchLanguage} aria-pressed={showHindi}>{showHindi ? 'English' : 'हिन्दी'}</button>
+        <button className="about-trigger" ref={aboutButton} type="button" onClick={() => setOpen(true)}>About me <span aria-hidden="true">↓</span></button>
+        <img className="pet pet-peek" src="/pets/peeking.webp" alt="" />
+      </div>
+      <div className="hero-face hero-back" inert={!open}>
+        <div className="about-paper" ref={aboutPaper}>
+          <div className="about-top"><span>ABOUT ME</span><button ref={closeButton} type="button" onClick={() => { setOpen(false); requestAnimationFrame(() => aboutButton.current?.focus()); }}>Close <span aria-hidden="true">×</span></button></div>
+          <div className="about-copy">{profile.about.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}</div>
+          <div className="about-signature">Harsh Awasthi</div>
+          {canEdit && <button className="edit-button" type="button" onClick={onEdit}>Edit introduction</button>}
+        </div>
+      </div>
+    </div>
+  </section>;
 }

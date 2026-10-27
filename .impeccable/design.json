@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T21:39:47.679936+00:00",
+  "title": "Design System: Harsh Awasthi Portfolio",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper"
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Stone"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Fine Line"
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Light Sheet"
+      },
+      "feature-warm": {
+        "role": "neutral",
+        "displayName": "Warm Feature"
+      },
+      "feature-cool": {
+        "role": "neutral",
+        "displayName": "Cool Feature"
+      },
+      "focus": {
+        "role": "tertiary",
+        "displayName": "Warm Focus"
+      }
+    },
+    "typographyMeta": {
+      "hindi": {
+        "displayName": "Hindi display",
+        "purpose": "Devanagari hero greeting."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero greeting."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Work-row names."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions and introductions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Navigation and controls."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 20px 80px #0003",
+        "purpose": "Elevates dialogs over a dark backdrop."
+      }
+    ],
+    "motion": [
+      {
+        "name": "hero-flip",
+        "value": "transform .8s cubic-bezier(.16,1,.3,1)",
+        "purpose": "Transitions between the greeting and About."
+      },
+      {
+        "name": "row-hover",
+        "value": "background .2s ease, color .2s ease",
+        "purpose": "Inverts work rows on hover or focus."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "navigation",
+        "value": "1100px"
+      },
+      {
+        "name": "mobile",
+        "value": "650px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary form action.",
+      "html": "<button class=\"ds-primary\">Save changes</button>",
+      "css": ".ds-primary{padding:10px 16px;border:1px solid #111;background:#111;color:#fff;font:600 13px 'DM Sans',sans-serif}.ds-primary:hover{opacity:.8}.ds-primary:focus-visible{outline:3px solid #a56b42;outline-offset:3px}"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Compact navigation action.",
+      "html": "<button class=\"ds-outline\">Login</button>",
+      "css": ".ds-outline{padding:7px 12px;border:1px solid #111;background:transparent;color:#111;font:600 12px 'DM Sans',sans-serif}.ds-outline:hover{background:#111;color:#fff}.ds-outline:focus-visible{outline:3px solid #a56b42;outline-offset:3px}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "description": "Square field for owner edits.",
+      "html": "<label class=\"ds-label\">Title<input class=\"ds-input\" placeholder=\"Project title\"></label>",
+      "css": ".ds-label{display:grid;gap:7px;font:600 13px 'DM Sans',sans-serif}.ds-input{border:1px solid #aaa39d;border-radius:0;background:#fffdfa;color:#111;padding:11px 12px;font:400 14px/1.5 'DM Sans',sans-serif}.ds-input:focus-visible{outline:3px solid #a56b42;outline-offset:3px}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "description": "Wordmark and compact section links.",
+      "html": "<nav class=\"ds-nav\"><strong>Harsh Awasthi</strong><a href=\"#projects\">Projects</a><a href=\"#contact\">Contact</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:24px;padding:20px;background:#faf7f5;border-bottom:1px solid #292724;font:600 13px 'DM Sans',sans-serif}.ds-nav strong{margin-right:auto;font-size:20px;letter-spacing:-.04em}.ds-nav a{color:#111;text-decoration:none}.ds-nav a:hover{text-decoration:underline;text-underline-offset:4px}.ds-nav a:focus-visible{outline:3px solid #a56b42;outline-offset:3px}"
+    },
+    {
+      "name": "Work row",
+      "kind": "custom",
+      "description": "Numbered editorial entry with dark hover state.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-number\">01</span><div><span class=\"ds-title\">Selected project</span><p>A concise description and resource links.</p><a href=\"#\">View project</a></div></div>",
+      "css": ".ds-row{display:flex;gap:25px;padding:24px;border-bottom:1px solid #292724;background:#faf7f5;color:#111;transition:background .2s ease,color .2s ease}.ds-row:hover,.ds-row:focus-within{background:#111;color:#fff}.ds-number{font:13px 'DM Sans',sans-serif}.ds-title{font:22px 'PT Serif',Georgia,serif}.ds-row p{font:14px/1.55 'PT Serif',Georgia,serif}.ds-row a{color:inherit;font:600 11px 'DM Sans',sans-serif}.ds-row a:focus-visible{outline:3px solid #a56b42;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Interactive Editorial Portfolio",
+    "overview": "A restrained, warm paper canvas carries a spacious typographic portfolio. Thin rules and numbered rows provide the structure, while a bilingual reveal and small pixel-art character add personality. The visual reference is MiMo; the content and character are Harsh's own.",
+    "keyCharacteristics": [
+      "Warm monochrome surfaces and fine black dividing lines.",
+      "Bold sans-serif headlines paired with readable serif copy.",
+      "Large editorial spacing, numbered rows, and a typographic interlude.",
+      "Playful motion with explicit touch and keyboard alternatives."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preserve the warm paper and ink contrast and the thin structural rules.",
+      "Do give section headings generous space and keep descriptive copy readable.",
+      "Do provide keyboard and touch access to interactions and respect reduced motion.",
+      "Do use the supplied pixel character sparingly as an interactive detail."
+    ],
+    "donts": [
+      "Don't replace the bilingual reveal with an interaction available only to a pointer.",
+      "Don't turn the numbered editorial rows into heavy rounded cards.",
+      "Don't rely on color alone to communicate focus or error states."
+    ]
+  }
+}

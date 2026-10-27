@@ -1,10 +1,9 @@
-import type { NextConfig } from "next";
-
+import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
-  output: 'export',
-  images: {
-    unoptimized: true,
+  agentRules: false,
+  images: { unoptimized: true },
+  async redirects() {
+    return ['projects', 'research', 'experience', 'achievements', 'activities', 'journey'].map(section => ({ source: `/${section}`, destination: `/#${section}`, permanent: true }));
   },
 };
-
 export default nextConfig;
