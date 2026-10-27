@@ -8,10 +8,7 @@ export default defineConfig({
     compatibilityFlags: ['nodejs_compat'],
     assets: { htmlHandling: 'none', notFoundHandling: 'none', runWorkerFirst: ['/*', '!/_next/static/*', '!/*/_next/static/*'] },
     observability: {
-      enabled: true,
-      logs: { enabled: true },
-      traces: { enabled: true },
-      issues: { enabled: true },
+      enabled: false,
     },
     env: {
       ASSETS: bindings.assets(),
