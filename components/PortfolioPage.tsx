@@ -203,7 +203,14 @@ function Timeline({
         const logo =
           entry.logo?.url || organizationLogos[entry.organization || ""];
         return (
-          <div className="timeline-row" key={entry._id}>
+          <motion.div
+            className="timeline-row"
+            key={entry._id}
+            initial={false}
+            whileInView={{ x: [-16, 0], opacity: [0.55, 1] }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
             {experience && (
               <motion.span
                 className={`timeline-logo ${logo === organizationLogos["Andromeida Maritime Solutions"] ? "timeline-logo-dark" : ""}`}
@@ -211,7 +218,7 @@ function Timeline({
                 initial={false}
                 whileInView={{ borderColor: ["#dce5f5", "#7599e4"] }}
                 viewport={{ once: true, margin: "0px 0px -25% 0px" }}
-                transition={{ duration: 0.28 }}
+                transition={{ duration: 0.5 }}
               >
                 {logo ? (
                   <img src={logo} alt="" loading="lazy" />
@@ -237,7 +244,7 @@ function Timeline({
               )}
             </div>
             <div className="timeline-date">{entry.date}</div>
-          </div>
+          </motion.div>
         );
       })}
     </div>
@@ -358,9 +365,13 @@ export function PortfolioPage({
       </a>
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Harsh Awasthi, home">
-          <span className="wordmark-symbol">
-            h<span>.</span>
-          </span>
+          <img
+            className="wordmark-symbol"
+            src="/mark.png"
+            alt=""
+            width={36}
+            height={36}
+          />
           <span>{data.profile.name}</span>
         </a>
         <nav
@@ -453,14 +464,16 @@ export function PortfolioPage({
                     initial={false}
                     whileInView={
                       reduced === false
-                        ? { pathLength: [0, 1], opacity: [0, 0.95, 0.65] }
+                        ? { pathLength: [0, 1, 1], opacity: [0, 0.95, 0] }
                         : undefined
                     }
                     viewport={{ once: true, amount: 0.45 }}
                     transition={{
-                      duration: 0.65,
-                      ease: "easeOut",
-                      delay: 0.24,
+                      duration: 1.4,
+                      ease: "easeInOut",
+                      delay: 0.3,
+                      repeat: Infinity,
+                      repeatDelay: 3.5,
                     }}
                   />
                 </svg>
@@ -666,12 +679,16 @@ export function PortfolioPage({
             </Reveal>
             <div className="awards-grid">
               {data.awards.map((award) => (
-                <div className="award" key={award._id}>
+                <Reveal
+                  className="award"
+                  key={award._id}
+                  delay={(data.awards.indexOf(award) % 3) * 0.06}
+                >
                   <span className="award-date">{award.date}</span>
                   <h3>{award.title}</h3>
                   <p>{award.organization}</p>
                   <span>{award.description}</span>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>

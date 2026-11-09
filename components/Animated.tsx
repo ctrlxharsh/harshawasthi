@@ -25,11 +25,11 @@ export function Reveal({
       initial={enter && reduced === false ? { y: 10, opacity: 0 } : false}
       animate={enter ? { y: 0, opacity: 1 } : undefined}
       whileInView={
-        enter || reduced ? undefined : { y: [20, 0], opacity: [0.65, 1] }
+        enter || reduced ? undefined : { y: [32, 0], opacity: [0.35, 1] }
       }
       viewport={{ once: true, amount: 0.12 }}
       transition={{
-        duration: reduced ? 0 : enter ? 0.24 : 0.42,
+        duration: reduced ? 0 : enter ? 0.3 : 0.55,
         ease: "easeOut",
         delay: reduced ? 0 : delay,
       }}
@@ -50,7 +50,7 @@ export function HoverCard({
   return (
     <motion.div
       className={className}
-      whileHover={reduced ? undefined : { y: -5 }}
+      whileHover={reduced ? undefined : { y: -8 }}
       transition={{ type: "spring", stiffness: 380, damping: 32 }}
     >
       {children}
