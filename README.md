@@ -1,37 +1,35 @@
-# Harsh Awasthi — portfolio
+# Harsh Awasthi — research portfolio
 
-A single-page portfolio built with Next.js, React and TypeScript. Content is stored in Neon Postgres and can be edited on the page by the owner using Neon Auth. Media is stored in the existing S3-compatible `uploads` bucket.
+A single-page research and engineering portfolio built with Next.js, Motion, shadcn/ui and Sanity. Research and project details open as accessible, shareable dialogs. The generated abstract hero is illustrative artwork.
 
-## Local development
+## Development
 
-Use Node.js 24.22 or later in the Node 24 line, then:
+Use Node.js 22.12 or newer. Run:
 
 ```sh
 npm ci
-cp .env.example .env.local
 npm run dev
 ```
 
-Fill in `.env.local` with the Neon database and Auth settings, owner ID and email, and S3-compatible storage credentials. `NEON_AUTH_COOKIE_SECRET` must be a long random secret. Never commit credentials. Open http://localhost:3000, select Login, and use the owner's password. The owner email is supplied by the server; editing and uploads require the matching verified owner ID.
+The site reads Sanity project `mke2ofjc` and dataset `production` by default. `.env.example` documents optional overrides. When the dataset has not been imported, the site displays the bundled, sourced initial content.
 
-The existing database is already initialized. For a **new** database and bucket, run `npm run seed` with the environment configured; seeding creates the content table, uploads the bundled assets, and inserts initial content only if no portfolio exists. `npm run storage:cors` adds the portfolio upload rule while preserving other bucket rules. Add any additional preview origins to that rule if needed. Removing media in the editor detaches it; it does not delete the object.
+## Sanity
 
-Entries with a cover image, links, tags, extra text or gallery images can open a detailed popup. Use **Detailed view** in an entry's editor to turn it on or off. The short description is shared with the card. Gallery images can be uploaded or linked and given individual captions. Entries without additional content remain non-clickable.
+Sign in with `npx sanity login`, then use `npm run import-content` once to create the initial documents. The command uses the authenticated CLI session, creates documents only when their IDs do not already exist, and leaves existing edits intact. Alternatively, set `SANITY_WRITE_TOKEN` locally for a token with write permissions. Do not place tokens in client code or commit them.
+
+At Sanity Manage, add the local origin and any Vercel preview and production origins under API CORS origins, allowing credentials for Studio login. Open `/studio` to edit content. Publish edits in Studio to update the site through Sanity Live. Only published content is queried. If the dataset is private, provide a server-side `SANITY_API_READ_TOKEN` with viewer access.
+
+The project and publication schemas support rich text, image galleries, video URLs, technology tags and multiple evidence links. Featured projects are controlled by their featured flag and order.
 
 ## Checks
 
 ```sh
+npm run typecheck
 npm run lint
-npx tsc --noEmit
-npm run build
 npm run check
-npm run build:vinext
+npm run build
 ```
-
-`npm run check` needs a configured Neon database and checks validation, authorization, and stale-write protection using a temporary record. For a local Workers preview, copy the environment values to an ignored `.dev.vars` file and run `npm run start:vinext -- --port 3001` after building. Both `.env.local` and `.dev.vars` contain secrets and must remain private.
 
 ## Deployment
 
-The Workers build uses vinext and `cloudflare.config.ts`. Configure its declared secret bindings in the target Cloudflare environment, set the bucket and region for that environment, and add the deployed origin to Neon Auth's trusted origins. Configure the custom domain `harshawasthi.in` in Cloudflare before cutover. Then use `npm run deploy:vinext` with an authenticated Cloudflare account. The deployment needs access to the Neon database, Auth service, and bucket; a static host alone cannot run the editor or API.
-
-The original GitHub Pages site remains on the original branch until deployment is deliberately switched. The old static Pages workflow was removed from this branch because this version requires server endpoints. The canonical URL and sitemap target `https://harshawasthi.in`; legacy section routes redirect to their single-page anchors.
+The existing Cloudflare Worker is named `portfolio`. Build its OpenNext artifact with `npm run build:cloudflare` and use `npm run preview:cloudflare` for local Workers verification. Upload a version for review before directing production traffic to it. Configure the preview URL as a Sanity CORS origin and verify content updates in the actual Worker environment. The public content query reads fresh Sanity data on each request, avoiding a shared cache dependency for this small portfolio. The previous section paths redirect to single-page anchors, and the previous service-worker endpoint is retained as a no-cache worker.

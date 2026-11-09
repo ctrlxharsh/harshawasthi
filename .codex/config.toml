@@ -1,0 +1,7 @@
+[mcp_servers.motion]
+type = "http"
+url = "https://mcp.motion.dev"
+
+[mcp_servers.shadcn]
+command = "npx"
+args = ["--yes", "shadcn@4.23.0", "mcp"]
