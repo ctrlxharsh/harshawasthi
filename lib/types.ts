@@ -26,8 +26,10 @@ export type TimelineEntry = {
   _id: string;
   title: string;
   organization?: string;
+  logo?: Media;
   date?: string;
   description?: string;
+  highlights?: string[];
   order?: number;
 };
 export type SiteSettings = {

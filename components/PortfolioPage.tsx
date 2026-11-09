@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useAnimate,
+  useReducedMotion,
+  useScroll,
+} from "motion/react";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { ArrowDown, ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 import {
@@ -16,6 +22,36 @@ import type { CaseStudy, Media, Portfolio, TimelineEntry } from "@/lib/types";
 import { httpUrl, selectionFromParams } from "@/lib/links";
 
 type Selection = { kind: "project" | "research"; slug: string };
+
+const heroTransition = { duration: 0.48, ease: [0.22, 1, 0.36, 1] } as const;
+
+const organizationLogos: Record<string, string> = {
+  "BMW Group · Munich, Germany": "/organizations/bmw.png",
+  "Andromeida Maritime Solutions": "/organizations/andromeida.svg",
+  "Indian Institute of Technology (BHU)": "/organizations/iit-bhu.png",
+};
+const archivedCovers: Record<string, Media> = {
+  lagps: {
+    url: "/work/lagps.webp",
+    alt: "The LaGPS architecture connects a semantic interpreter to a symbolic executor that produces a segmentation mask.",
+    caption: "LaGPS architecture, from the MusIML workshop presentation.",
+  },
+  "air-quality-estimation": {
+    url: "/work/pm.webp",
+    alt: "Air quality estimation project artwork",
+  },
+  newssure: { url: "/work/newssure.webp", alt: "NewsSure project artwork" },
+  "agenda-ai": { url: "/work/agendaai.webp", alt: "Agenda AI project artwork" },
+  "auv-perception-control": {
+    url: "/work/sea5.webp",
+    alt: "Autonomous underwater vehicle project artwork",
+  },
+};
+
+function coverFor(item: CaseStudy) {
+  return item.image?.url ? item.image : archivedCovers[item.slug];
+}
+
 const PortableComponents: PortableTextComponents = {
   types: {
     media: ({ value }: { value: Media }) =>
@@ -45,69 +81,76 @@ function Card({
   kind,
   index,
   onOpen,
-  large = false,
+  delay = 0,
+  compact = false,
+  newlyShown = false,
 }: {
   item: CaseStudy;
   kind: Selection["kind"];
   index: number;
   onOpen: (selection: Selection, target: HTMLElement) => void;
-  large?: boolean;
+  delay?: number;
+  compact?: boolean;
+  newlyShown?: boolean;
 }) {
-  const query = kind === "project" ? "project" : "research";
+  const cover = coverFor(item);
   return (
-    <HoverCard className={`card-shell ${large ? "card-shell-large" : ""}`}>
-      <a
-        className="work-card"
-        href={`/?${query}=${encodeURIComponent(item.slug)}`}
-        onClick={(event) => {
-          if (
-            event.metaKey ||
-            event.ctrlKey ||
-            event.shiftKey ||
-            event.altKey ||
-            event.button !== 0
-          )
-            return;
-          event.preventDefault();
-          onOpen({ kind, slug: item.slug }, event.currentTarget);
-        }}
-      >
-        <div className={`card-art art-${item.accent || "blue"}`}>
-          {item.image?.url ? (
-            <img
-              src={item.image.url}
-              alt={item.image.alt || ""}
-              loading="lazy"
-            />
-          ) : (
-            <>
-              <div className="art-ring art-ring-one" />
-              <div className="art-ring art-ring-two" />
-              <span className="art-mark">
-                {kind === "research" ? "R" : "P"}
-                <small> / {String(index + 1).padStart(2, "0")}</small>
+    <Reveal className="card-shell" delay={delay} enter={newlyShown}>
+      <HoverCard>
+        <a
+          className={compact ? "work-card work-card-compact" : "work-card"}
+          href={`/?${kind}=${encodeURIComponent(item.slug)}`}
+          onClick={(event) => {
+            if (
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey ||
+              event.button !== 0
+            )
+              return;
+            event.preventDefault();
+            onOpen({ kind, slug: item.slug }, event.currentTarget);
+          }}
+        >
+          {!compact && (
+            <div className="card-art-frame">
+              <div className={`card-art art-${item.accent || "blue"}`}>
+                {cover?.url ? (
+                  <img src={cover.url} alt={cover.alt || ""} loading="lazy" />
+                ) : (
+                  <>
+                    <div className="art-ring art-ring-one" />
+                    <div className="art-ring art-ring-two" />
+                    <span className="art-mark">
+                      {kind === "research" ? "R" : "P"}
+                      <small> / {String(index + 1).padStart(2, "0")}</small>
+                    </span>
+                    <span className="art-sub">{item.category}</span>
+                  </>
+                )}
+              </div>
+              <span className="card-arrow" aria-hidden="true">
+                <ArrowUpRight size={19} strokeWidth={1.7} />
               </span>
-              <span className="art-sub">{item.category}</span>
-            </>
+            </div>
           )}
-          <span className="card-arrow" aria-hidden="true">
-            <ArrowUpRight size={19} strokeWidth={1.7} />
-          </span>
-        </div>
-        <div className="card-copy">
-          <div className="card-meta">
-            <span>{item.category}</span>
-            <span>{item.date}</span>
+          <div className="card-copy">
+            <div className="card-meta">
+              <span>{item.category}</span>
+              <span>{item.date}</span>
+            </div>
+            <h3>{item.title}</h3>
+            {item.venue && <p className="card-venue">{item.venue}</p>}
+            <p>{item.summary}</p>
+            <span className="card-link">
+              Explore {kind === "research" ? "research" : "project"}{" "}
+              <ArrowRight size={15} />
+            </span>
           </div>
-          <h3>{item.title}</h3>
-          <p>{item.summary}</p>
-          <span className="card-link">
-            Explore {kind === "research" ? "research" : "project"}{" "}
-            <ArrowRight size={15} />
-          </span>
-        </div>
-      </a>
-    </HoverCard>
+        </a>
+      </HoverCard>
+    </Reveal>
   );
 }
 
@@ -131,24 +174,72 @@ function SectionHeading({
   );
 }
 
-function Timeline({ entries }: { entries: TimelineEntry[] }) {
+function Timeline({
+  entries,
+  experience = false,
+}: {
+  entries: TimelineEntry[];
+  experience?: boolean;
+}) {
+  const track = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: track,
+    offset: ["start 82%", "end 64%"],
+  });
+
   return (
-    <div className="timeline">
-      {entries.map((entry) => (
-        <div className="timeline-row" key={entry._id}>
-          <div className="timeline-date">{entry.date}</div>
-          <div className="timeline-main">
-            <h3>{entry.title}</h3>
-            <p className="timeline-org">{entry.organization}</p>
-            {entry.description && <p>{entry.description}</p>}
+    <div
+      className={`timeline ${experience ? "timeline-experience" : ""}`}
+      ref={track}
+    >
+      {experience && (
+        <motion.span
+          aria-hidden="true"
+          className="timeline-progress"
+          style={{ scaleY: scrollYProgress }}
+        />
+      )}
+      {entries.map((entry) => {
+        const logo =
+          entry.logo?.url || organizationLogos[entry.organization || ""];
+        return (
+          <div className="timeline-row" key={entry._id}>
+            {experience && (
+              <motion.span
+                className={`timeline-logo ${logo === organizationLogos["Andromeida Maritime Solutions"] ? "timeline-logo-dark" : ""}`}
+                aria-hidden="true"
+                initial={false}
+                whileInView={{ borderColor: ["#dce5f5", "#7599e4"] }}
+                viewport={{ once: true, margin: "0px 0px -25% 0px" }}
+                transition={{ duration: 0.28 }}
+              >
+                {logo ? (
+                  <img src={logo} alt="" loading="lazy" />
+                ) : (
+                  entry.organization
+                    ?.split(/\W+/)
+                    .slice(0, 2)
+                    .map((word) => word[0])
+                    .join("")
+                )}
+              </motion.span>
+            )}
+            <div className="timeline-main">
+              <h3>{entry.title}</h3>
+              <p className="timeline-org">{entry.organization}</p>
+              {entry.description && <p>{entry.description}</p>}
+              {experience && !!entry.highlights?.length && (
+                <ul className="timeline-highlights">
+                  {entry.highlights.map((highlight, index) => (
+                    <li key={index}>{highlight}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="timeline-date">{entry.date}</div>
           </div>
-          <ArrowUpRight
-            className="timeline-mark"
-            size={17}
-            aria-hidden="true"
-          />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -163,38 +254,81 @@ export function PortfolioPage({
   const [selection, setSelection] = useState<Selection | null>(initial);
   const [menu, setMenu] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const closing = useRef(false);
   const trigger = useRef<HTMLElement | null>(null);
+  const moreProjects = useRef<HTMLButtonElement>(null);
+  const projectsGrid = useRef<HTMLDivElement>(null);
+  const focusMoreProject = useRef(false);
+  const researchHeading = useRef<HTMLElement>(null);
+  const projectsHeading = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
+  const [hero, animateHero] = useAnimate<HTMLElement>();
+
+  useEffect(() => {
+    if (reduced !== false || initial || window.location.hash) return;
+    const entrance = animateHero([
+      ["h1", { y: [32, 0], opacity: [0.5, 1] }, heroTransition],
+      [
+        ".hero-details",
+        { y: [22, 0], opacity: [0.62, 1] },
+        { ...heroTransition, at: 0.08 },
+      ],
+      [
+        ".hero-art",
+        { y: [24, 0], opacity: [0.58, 1] },
+        { ...heroTransition, at: 0.12 },
+      ],
+    ]);
+    return () => entrance.stop();
+  }, [animateHero, initial, reduced]);
+
   const selected = selection
     ? (selection.kind === "project" ? data.projects : data.publications).find(
         (item) => item.slug === selection.slug,
       )
     : undefined;
-  const featured = useMemo(
-    () =>
-      data.projects
-        .filter((project) => project.featuredOnHome)
-        .sort((a, b) => (a.featuredOrder ?? 999) - (b.featuredOrder ?? 999))
-        .slice(0, 4),
-    [data.projects],
+
+  const allProjects = [...data.projects].sort(
+    (a, b) => (a.order ?? 999) - (b.order ?? 999),
   );
-  const allProjects = useMemo(
-    () =>
-      [...data.projects].sort((a, b) => (a.order ?? 999) - (b.order ?? 999)),
-    [data.projects],
+  const featured = allProjects
+    .filter((project) => project.featuredOnHome)
+    .sort((a, b) => (a.featuredOrder ?? 999) - (b.featuredOrder ?? 999))
+    .slice(0, 4);
+  const featuredSlugs = new Set(featured.map((item) => item.slug));
+  const orderedProjects = [
+    ...featured,
+    ...allProjects.filter((item) => !featuredSlugs.has(item.slug)),
+  ];
+  const remainingProjects = orderedProjects.slice(4);
+  const papers = data.publications.filter(
+    (item) => item.category?.toLowerCase() !== "presentation",
+  );
+  const presentations = data.publications.filter(
+    (item) => item.category?.toLowerCase() === "presentation",
   );
 
   useEffect(() => {
-    const update = () =>
+    if (expanded && focusMoreProject.current) {
+      focusMoreProject.current = false;
+      projectsGrid.current?.querySelectorAll("a")[4]?.focus();
+    }
+  }, [expanded]);
+
+  useEffect(() => {
+    const update = () => {
+      closing.current = false;
       setSelection(
         selectionFromParams(new URLSearchParams(window.location.search)),
       );
+    };
     window.addEventListener("popstate", update);
     return () => window.removeEventListener("popstate", update);
   }, []);
 
   const open = useCallback((next: Selection, element: HTMLElement) => {
     trigger.current = element;
+    closing.current = false;
     const url = new URL(window.location.href);
     url.searchParams.delete("project");
     url.searchParams.delete("research");
@@ -204,10 +338,12 @@ export function PortfolioPage({
   }, []);
 
   const close = useCallback(() => {
+    const url = new URL(window.location.href);
+    if (closing.current || !selectionFromParams(url.searchParams)) return;
     if (window.history.state?.portfolioDialog) {
+      closing.current = true;
       window.history.back();
     } else {
-      const url = new URL(window.location.href);
       url.searchParams.delete("project");
       url.searchParams.delete("research");
       window.history.replaceState(null, "", url);
@@ -233,11 +369,11 @@ export function PortfolioPage({
         >
           {[
             [data.settings.researchLabel, "#research"],
-            [data.settings.projectsLabel, "#projects"],
             [data.settings.experienceLabel, "#experience"],
-            [data.settings.aboutLabel, "#about"],
+            [data.settings.educationLabel, "#journey"],
+            [data.settings.projectsLabel, "#projects"],
           ].map(([label, href]) => (
-            <a key={label} href={href} onClick={() => setMenu(false)}>
+            <a key={href} href={href} onClick={() => setMenu(false)}>
               {label}
             </a>
           ))}
@@ -261,7 +397,7 @@ export function PortfolioPage({
       </header>
 
       <main id="main">
-        <section className="hero" id="top">
+        <section className="hero" id="top" ref={hero}>
           <div className="hero-copy">
             <div className="eyebrow">
               <span className="eyebrow-line" />{" "}
@@ -271,32 +407,69 @@ export function PortfolioPage({
               <span className="sr-only">{data.settings.eyebrow}</span>
             </div>
             <h1>{data.settings.headline}</h1>
-            <p className="hero-intro">{data.settings.intro}</p>
-            <div className="hero-actions">
-              <a className="pill pill-dark" href="#research">
-                {data.settings.heroPrimaryAction} <ArrowDown size={16} />
-              </a>
-              <a className="text-action" href="#about">
-                {data.settings.heroSecondaryAction} <ArrowRight size={16} />
-              </a>
+            <div className="hero-details">
+              <p className="hero-intro">{data.settings.intro}</p>
+              <div className="hero-actions">
+                <a className="pill pill-dark" href="#research">
+                  {data.settings.heroPrimaryAction} <ArrowDown size={16} />
+                </a>
+                <a className="text-action" href="#about">
+                  {data.settings.heroSecondaryAction} <ArrowRight size={16} />
+                </a>
+              </div>
+              <p className="availability">
+                <span />
+                {data.settings.availability}
+              </p>
             </div>
-            <p className="availability">
-              <span />
-              {data.settings.availability}
-            </p>
           </div>
-          <div className="hero-art">
+          <figure className="hero-art">
             <img
-              src={data.settings.heroImage?.url || "/research-form.webp"}
-              alt={data.settings.heroImage?.alt || ""}
+              src={
+                data.settings.heroImage?.url || "/work/marine-perception.webp"
+              }
+              alt={
+                data.settings.heroImage?.url
+                  ? data.settings.heroImage.alt || ""
+                  : "Illustrated underwater research vehicle above mapped seabed contours"
+              }
+              width={1536}
+              height={1024}
               fetchPriority="high"
             />
-            <span className="hero-art-caption">
-              AN EXPLORATION IN
-              <br />
-              INTELLIGENT SYSTEMS
-            </span>
-          </div>
+            {!data.settings.heroImage?.url && (
+              <>
+                <svg
+                  className="hero-sonar"
+                  viewBox="0 0 1536 1024"
+                  aria-hidden="true"
+                  fill="none"
+                >
+                  <motion.path
+                    d="M 684 727 Q 896 764 1041 606"
+                    stroke="#8ceaff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    initial={false}
+                    whileInView={
+                      reduced === false
+                        ? { pathLength: [0, 1], opacity: [0, 0.95, 0.65] }
+                        : undefined
+                    }
+                    viewport={{ once: true, amount: 0.45 }}
+                    transition={{
+                      duration: 0.65,
+                      ease: "easeOut",
+                      delay: 0.24,
+                    }}
+                  />
+                </svg>
+                <figcaption className="hero-art-caption">
+                  Illustration · Marine perception
+                </figcaption>
+              </>
+            )}
+          </figure>
           <div className="hero-foot">
             <span>HARSH AWASTHI</span>
             <span>RESEARCH & ENGINEERING</span>
@@ -304,7 +477,12 @@ export function PortfolioPage({
           </div>
         </section>
 
-        <section className="section research-section" id="research">
+        <section
+          className="section research-section"
+          id="research"
+          ref={researchHeading}
+          tabIndex={-1}
+        >
           <div className="container">
             <Reveal>
               <SectionHeading
@@ -313,104 +491,34 @@ export function PortfolioPage({
                 intro={data.settings.researchIntro}
               />
             </Reveal>
-            <div className="research-grid">
-              {data.publications.map((item, index) => (
-                <Card
-                  key={item._id}
-                  item={item}
-                  kind="research"
-                  index={index}
-                  onOpen={open}
-                  large={index === 0}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section projects-section" id="projects">
-          <div className="container">
-            <Reveal>
-              <SectionHeading
-                label={data.settings.selectedLabel}
-                title={data.settings.projectsTitle}
-                intro={data.settings.projectsIntro}
-              />
-            </Reveal>
-            <div className="project-grid">
-              {featured.map((item, index) => (
-                <Card
-                  key={item._id}
-                  item={item}
-                  kind="project"
-                  index={index}
-                  onOpen={open}
-                />
-              ))}
-            </div>
-            <div className="archive-heading">
-              <div>
-                <span className="section-kicker">
-                  {data.settings.archiveLabel}
-                </span>
-                <h3>{data.settings.archiveTitle}</h3>
-              </div>
-              <button
-                className="pill pill-outline"
-                type="button"
-                aria-expanded={expanded}
-                onClick={() => setExpanded(!expanded)}
-              >
-                {expanded
-                  ? data.settings.archiveCollapseAction
-                  : data.settings.archiveExpandAction}{" "}
-                <ArrowDown size={16} className={expanded ? "turned" : ""} />
-              </button>
-            </div>
-            <div className="archive-list" id="all-projects">
-              {(expanded ? allProjects : allProjects.slice(0, 3)).map(
-                (item, index) => (
-                  <a
+            {papers.length > 0 && (
+              <div className="research-grid">
+                {papers.map((item, index) => (
+                  <Card
                     key={item._id}
-                    href={`/?project=${encodeURIComponent(item.slug)}`}
-                    onClick={(event) => {
-                      if (
-                        event.metaKey ||
-                        event.ctrlKey ||
-                        event.shiftKey ||
-                        event.altKey ||
-                        event.button !== 0
-                      )
-                        return;
-                      event.preventDefault();
-                      open(
-                        { kind: "project", slug: item.slug },
-                        event.currentTarget,
-                      );
-                    }}
-                  >
-                    <span className="archive-index">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span className="archive-name">{item.title}</span>
-                    <span className="archive-category">{item.category}</span>
-                    <ArrowUpRight size={19} />
-                  </a>
-                ),
-              )}
-            </div>
-            <noscript>
-              <div className="archive-list">
-                {allProjects.slice(3).map((item) => (
-                  <a
-                    key={item._id}
-                    href={`/?project=${encodeURIComponent(item.slug)}`}
-                  >
-                    {item.title}
-                  </a>
+                    item={item}
+                    kind="research"
+                    index={index}
+                    onOpen={open}
+                  />
                 ))}
               </div>
-            </noscript>
+            )}
+            {presentations.length > 0 && (
+              <div className="research-presentations">
+                <p className="section-kicker">Presentations</p>
+                {presentations.map((item, index) => (
+                  <Card
+                    key={item._id}
+                    item={item}
+                    kind="research"
+                    index={index}
+                    onOpen={open}
+                    compact
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -425,7 +533,89 @@ export function PortfolioPage({
                 <p>{data.settings.experienceIntro}</p>
               </div>
             </Reveal>
-            <Timeline entries={data.experience} />
+            <Timeline entries={data.experience} experience />
+          </div>
+        </section>
+
+        <section className="section education-section" id="journey">
+          <div className="container">
+            <div className="education-grid">
+              <div>
+                <span className="section-kicker">
+                  {data.settings.educationLabel}
+                </span>
+                <h2>{data.settings.educationTitle}</h2>
+              </div>
+              <Timeline entries={data.education} />
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="section projects-section"
+          id="projects"
+          ref={projectsHeading}
+          tabIndex={-1}
+        >
+          <div className="container">
+            <Reveal>
+              <SectionHeading
+                label={data.settings.projectsLabel}
+                title={data.settings.projectsTitle}
+                intro={data.settings.projectsIntro}
+              />
+            </Reveal>
+            <div className="project-grid" id="all-projects" ref={projectsGrid}>
+              {(expanded ? orderedProjects : orderedProjects.slice(0, 4)).map(
+                (item, index) => (
+                  <Card
+                    key={item._id}
+                    item={item}
+                    kind="project"
+                    index={index}
+                    onOpen={open}
+                    newlyShown={index >= 4}
+                    delay={index >= 4 ? Math.min(index - 4, 5) * 0.05 : 0}
+                  />
+                ),
+              )}
+            </div>
+            {remainingProjects.length > 0 && (
+              <>
+                <div className="projects-actions">
+                  <button
+                    className="pill pill-outline"
+                    type="button"
+                    aria-controls="all-projects"
+                    aria-expanded={expanded}
+                    ref={moreProjects}
+                    onClick={() => {
+                      focusMoreProject.current = !expanded;
+                      setExpanded(!expanded);
+                    }}
+                  >
+                    {expanded
+                      ? data.settings.archiveCollapseAction
+                      : "Show more projects"}
+                    <ArrowDown size={16} className={expanded ? "turned" : ""} />
+                  </button>
+                </div>
+                <noscript>
+                  <style>{".projects-actions { display: none }"}</style>
+                  <div className="project-grid projects-actions-fallback">
+                    {remainingProjects.map((item, index) => (
+                      <Card
+                        key={item._id}
+                        item={item}
+                        kind="project"
+                        index={index + 4}
+                        onOpen={open}
+                      />
+                    ))}
+                  </div>
+                </noscript>
+              </>
+            )}
           </div>
         </section>
 
@@ -452,15 +642,6 @@ export function PortfolioPage({
                   Get in touch <ArrowUpRight size={17} />
                 </a>
               </div>
-            </div>
-            <div className="education-grid" id="journey">
-              <div>
-                <span className="section-kicker">
-                  {data.settings.educationLabel}
-                </span>
-                <h2>{data.settings.educationTitle}</h2>
-              </div>
-              <Timeline entries={data.education} />
             </div>
             <div className="skills-grid" id="skills">
               {data.skills.map((skill) => (
@@ -534,125 +715,40 @@ export function PortfolioPage({
         <a href="#top">Back to top ↑</a>
       </footer>
 
-      <Dialog
-        open={!!selected}
-        onOpenChange={(next) => {
-          if (!next) close();
-        }}
-      >
-        <AnimatePresence>
-          {selected && (
-            <DialogContent
-              className="case-dialog"
-              onCloseAutoFocus={(event) => {
-                if (trigger.current) {
-                  event.preventDefault();
-                  trigger.current.focus();
-                }
-              }}
-            >
-              <motion.article
-                key={selected._id}
-                initial={reduced ? false : { opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                <div className="case-header">
-                  <span className="section-kicker">
-                    {selected.category} {selected.date && `· ${selected.date}`}
-                  </span>
-                  <DialogTitle>{selected.title}</DialogTitle>
-                  <DialogDescription>{selected.summary}</DialogDescription>
-                  {(selected.authors || selected.venue) && (
-                    <p className="case-byline">
-                      {[selected.authors, selected.venue]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  )}
-                  {!!selected.proofLinks?.length && (
-                    <div className="case-links">
-                      {selected.proofLinks
-                        .filter((link) => httpUrl(link.url))
-                        .map((link) => (
-                          <a
-                            className="pill pill-outline"
-                            key={link.url}
-                            href={httpUrl(link.url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {link.label} <ArrowUpRight size={15} />
-                          </a>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                <div className={`case-visual art-${selected.accent || "blue"}`}>
-                  {selected.image?.url ? (
-                    <img
-                      src={selected.image.url}
-                      alt={selected.image.alt || ""}
-                    />
-                  ) : (
-                    <>
-                      <div className="art-ring art-ring-one" />
-                      <div className="art-ring art-ring-two" />
-                      <span>{selected.category}</span>
-                    </>
-                  )}
-                </div>
-                <div className="case-body">
-                  {!!selected.technology?.length && (
-                    <div className="case-tags">
-                      {selected.technology.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                  {selected.body && (
-                    <PortableText
-                      value={selected.body}
-                      components={PortableComponents}
-                    />
-                  )}
-                  {httpUrl(selected.videoUrl) && (
-                    <p>
-                      <a
-                        href={httpUrl(selected.videoUrl)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Watch demo video ↗
-                      </a>
-                    </p>
-                  )}
-                  {!!selected.gallery?.length && (
-                    <div className="case-gallery">
-                      {selected.gallery.map(
-                        (image, i) =>
-                          image.url && (
-                            <figure key={image.url + i}>
-                              <img
-                                src={image.url}
-                                alt={image.alt || ""}
-                                loading="lazy"
-                              />
-                              {image.caption && (
-                                <figcaption>{image.caption}</figcaption>
-                              )}
-                            </figure>
-                          ),
-                      )}
-                    </div>
-                  )}
-                </div>
-              </motion.article>
-            </DialogContent>
-          )}
-        </AnimatePresence>
-      </Dialog>
+      <AnimatePresence mode="wait">
+        {selected && selection && (
+          <CaseDialog
+            key={`${selection.kind}:${selection.slug}`}
+            selected={selected}
+            onClose={close}
+            onRestoreFocus={() => {
+              if (
+                selectionFromParams(new URLSearchParams(window.location.search))
+              )
+                return;
+              const source = trigger.current;
+              const targetHref = `/?${selection.kind}=${encodeURIComponent(selection.slug)}`;
+              if (
+                source?.getAttribute("href") === targetHref &&
+                source.getClientRects().length
+              ) {
+                source.focus({ preventScroll: true });
+              } else {
+                const section =
+                  selection.kind === "research"
+                    ? researchHeading.current
+                    : projectsHeading.current;
+                const card = section?.querySelector<HTMLElement>(
+                  `a[href="${targetHref}"]`,
+                );
+                (card?.getClientRects().length ? card : section)?.focus({
+                  preventScroll: false,
+                });
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
       {selected && (
         <noscript>
           <article className="container noscript-article">
@@ -675,5 +771,136 @@ export function PortfolioPage({
         </noscript>
       )}
     </MotionProvider>
+  );
+}
+
+function CaseDialog({
+  selected,
+  onClose,
+  onRestoreFocus,
+}: {
+  selected: CaseStudy;
+  onClose: () => void;
+  onRestoreFocus: () => void;
+}) {
+  const panel = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    container: panel,
+    trackContentSize: true,
+  });
+  const selectedCover = coverFor(selected);
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent
+        ref={panel}
+        className="case-dialog"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          onRestoreFocus();
+        }}
+      >
+        <motion.div
+          aria-hidden="true"
+          className="case-progress"
+          style={{ scaleX: scrollYProgress }}
+        />
+        <article key={selected._id}>
+          <div className={`case-visual art-${selected.accent || "blue"}`}>
+            {selectedCover?.url ? (
+              <img src={selectedCover.url} alt={selectedCover.alt || ""} />
+            ) : (
+              <>
+                <div className="art-ring art-ring-one" />
+                <div className="art-ring art-ring-two" />
+                <span>{selected.category}</span>
+              </>
+            )}
+          </div>
+          {selectedCover?.caption && (
+            <p className="case-caption">{selectedCover.caption}</p>
+          )}
+          <div className="case-header">
+            <span className="section-kicker">
+              {selected.category} {selected.date && `· ${selected.date}`}
+            </span>
+            <DialogTitle>{selected.title}</DialogTitle>
+            <DialogDescription>{selected.summary}</DialogDescription>
+            {(selected.authors || selected.venue) && (
+              <p className="case-byline">
+                {[selected.authors, selected.venue].filter(Boolean).join(" · ")}
+              </p>
+            )}
+            {!!selected.proofLinks?.length && (
+              <div className="case-links">
+                {selected.proofLinks
+                  .filter((link) => httpUrl(link.url))
+                  .map((link) => (
+                    <a
+                      className="pill pill-outline"
+                      key={link.url}
+                      href={httpUrl(link.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.label} <ArrowUpRight size={15} />
+                    </a>
+                  ))}
+              </div>
+            )}
+          </div>
+          <div className="case-body">
+            {!!selected.technology?.length && (
+              <div className="case-tags">
+                {selected.technology.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+            )}
+            {selected.body && (
+              <PortableText
+                value={selected.body}
+                components={PortableComponents}
+              />
+            )}
+            {httpUrl(selected.videoUrl) && (
+              <p>
+                <a
+                  href={httpUrl(selected.videoUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Watch demo video ↗
+                </a>
+              </p>
+            )}
+            {!!selected.gallery?.length && (
+              <div className="case-gallery">
+                {selected.gallery.map(
+                  (image, i) =>
+                    image.url && (
+                      <figure key={image.url + i}>
+                        <img
+                          src={image.url}
+                          alt={image.alt || ""}
+                          loading="lazy"
+                        />
+                        {image.caption && (
+                          <figcaption>{image.caption}</figcaption>
+                        )}
+                      </figure>
+                    ),
+                )}
+              </div>
+            )}
+          </div>
+        </article>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -211,6 +211,21 @@ function timeline(name: string, title: string) {
         title: "Organization or institution",
         type: "string",
       }),
+      ...(name === "experience"
+        ? [
+            defineField({
+              name: "logo",
+              title: "Organization logo",
+              type: "image",
+            }),
+            defineField({
+              name: "highlights",
+              title: "Highlights",
+              type: "array",
+              of: [{ type: "string" }],
+            }),
+          ]
+        : []),
       defineField({ name: "date", type: "string" }),
       defineField({ name: "description", type: "text" }),
       defineField({ name: "order", type: "number" }),

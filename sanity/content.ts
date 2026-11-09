@@ -18,7 +18,7 @@ const portfolioQuery = defineQuery(`{
     "gallery": gallery[] { ..., "url": asset->url },
     body[] { ..., _type == "media" => { ..., "url": asset->url } }
   },
-  "experience": *[_type == "experience"] | order(order asc),
+  "experience": *[_type == "experience"] | order(order asc) { ..., "logo": logo { "url": asset->url } },
   "education": *[_type == "education"] | order(order asc),
   "awards": *[_type == "award"] | order(order asc),
   "skills": *[_type == "skill"] | order(order asc)

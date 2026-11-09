@@ -10,18 +10,29 @@ export function MotionProvider({ children }: { children: ReactNode }) {
 export function Reveal({
   children,
   className,
+  delay = 0,
+  enter = false,
 }: {
   children: ReactNode;
   className?: string;
+  delay?: number;
+  enter?: boolean;
 }) {
   const reduced = useReducedMotion();
   return (
     <motion.div
       className={className}
-      initial={false}
-      whileInView={reduced ? undefined : { y: [8, 0], opacity: [0.94, 1] }}
+      initial={enter && reduced === false ? { y: 10, opacity: 0 } : false}
+      animate={enter ? { y: 0, opacity: 1 } : undefined}
+      whileInView={
+        enter || reduced ? undefined : { y: [20, 0], opacity: [0.65, 1] }
+      }
       viewport={{ once: true, amount: 0.12 }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
+      transition={{
+        duration: reduced ? 0 : enter ? 0.24 : 0.42,
+        ease: "easeOut",
+        delay: reduced ? 0 : delay,
+      }}
     >
       {children}
     </motion.div>

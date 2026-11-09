@@ -260,8 +260,14 @@ const publications: CaseStudy[] = [
     title: "Hybrid CNN–Transformer for cervical cytology",
     category: "Research paper",
     date: "2026",
-    venue: "IEEE DELCON 2026",
-    authors: "Ali, Siddiqui, Harsh Awasthi, Fatima",
+    venue: "Accepted at IEEE DELCON 2026",
+    authors: "Adeeba Ali, Ghufran Alam Siddiqui, Harsh Awasthi, Mariyam Fatima",
+    proofLinks: [
+      {
+        label: "Conference acceptance listing",
+        url: "https://www.bits-pilani.ac.in/delcon2026/accepted-papers-delcon-2026/",
+      },
+    ],
     summary:
       "Feature-level fusion for automated classification of cervical cells.",
     order: 2,
@@ -310,6 +316,7 @@ const entry = (
   date: string,
   description: string,
   order: number,
+  highlights?: string[],
 ): TimelineEntry => ({
   _id: id,
   title,
@@ -317,6 +324,7 @@ const entry = (
   date,
   description,
   order,
+  ...(highlights && { highlights }),
 });
 
 export const seed: Portfolio = {
@@ -390,6 +398,11 @@ export const seed: Portfolio = {
       "Jun–Dec 2026",
       "Built a modular AUV/ASV mission planner and developed a coral analysis pipeline using YOLO, SAM 2 and vision transformers. Engineered a Tauri application for local inference.",
       2,
+      [
+        "Designed a waypoint mission planner for underwater and surface vehicles, using TCP, UDP, WebRTC, and Protocol Buffers to connect the software to vehicle hardware.",
+        "Used YOLO to detect coral bleaching, SAM 2 to segment and track corals, and ViT-S to classify them. Aligned frames with Lucas–Kanade optical flow to measure changes.",
+        "Built separate batch-image and video workflows in a Tauri desktop app and converted models to ONNX for local inference.",
+      ],
     ),
     entry(
       "experience-sourceworx",
@@ -398,6 +411,11 @@ export const seed: Portfolio = {
       "Nov 2025–Jul 2026",
       "Built agentic systems for operational automation and an on-premise document intelligence pipeline using vLLM, GLM-OCR and Gemma.",
       3,
+      [
+        "Designed and evaluated components for an enterprise platform that orchestrates agents and lets them choose and run tools. Worked on model fine-tuning and quantization workflows.",
+        "Built full-stack agent workflows for nonprofit and social enterprise operations.",
+        "Deployed an on-premises pipeline using vLLM, GLM-OCR, and Gemma to extract and structure sensitive records.",
+      ],
     ),
     entry(
       "experience-iitbhu",
@@ -406,6 +424,10 @@ export const seed: Portfolio = {
       "Dec 2025–Jan 2026",
       "Accelerated remote-sensing preprocessing with PCA and evaluated an existing single-image 3D animal reconstruction approach.",
       4,
+      [
+        "Used PCA to reduce dimensions and compress features during preprocessing of high-resolution remote sensing imagery.",
+        "Evaluated an existing method for reconstructing 3D animals from a single image using SMAL, SD-Fit, and vision transformer features.",
+      ],
     ),
     entry(
       "experience-auvlead",
@@ -414,6 +436,10 @@ export const seed: Portfolio = {
       "May 2024–May 2026",
       "Directed 20+ student engineers across perception, navigation and embedded control for autonomous marine vehicles.",
       5,
+      [
+        "Led more than 20 student engineers across vehicle perception, navigation, and embedded control.",
+        "Oversaw system integration, hardware-in-the-loop testing, and collaboration across departments for international robotics competitions.",
+      ],
     ),
   ],
   education: [
