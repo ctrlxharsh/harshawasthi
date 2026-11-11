@@ -19,6 +19,8 @@ Sign in with `npx sanity login`, then use `npm run import-content` once to creat
 
 At Sanity Manage, add the local origin and any Vercel preview and production origins under API CORS origins, allowing credentials for Studio login. Open `/studio` to edit content. Publish edits in Studio to update the site through Sanity Live. Only published content is queried. If the dataset is private, provide a server-side `SANITY_API_READ_TOKEN` with viewer access.
 
+To change the hero image, open **Site settings** in Studio, upload an image in **Hero image**, add alternative text, and publish. Removing the image restores the default illustration.
+
 The project and publication schemas support rich text, image galleries, video URLs, technology tags and multiple evidence links. Featured projects are controlled by their featured flag and order.
 
 ## Checks

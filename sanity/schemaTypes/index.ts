@@ -71,10 +71,10 @@ const settings = defineType({
   title: "Site settings",
   type: "document",
   fields: [
+    defineField({ name: "heroImage", title: "Hero image", type: "media" }),
     ...settingsFields.map(([name, title]) =>
       defineField({ name, title, type: "string" }),
     ),
-    defineField({ name: "heroImage", title: "Hero image", type: "media" }),
   ],
 });
 const profile = defineType({
