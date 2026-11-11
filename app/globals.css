@@ -923,9 +923,7 @@ img {
 .case-body :is(ul, ol) :is(ul, ol),
 .noscript-article :is(ul, ol) :is(ul, ol) { margin-bottom: 0; }
 .case-body blockquote, .noscript-article blockquote {
-  border-left: 3px solid var(--blue);
   margin: 24px 0;
-  padding-left: 20px;
   font-style: italic;
 }
 .case-body a, .noscript-article a {
