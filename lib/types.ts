@@ -32,7 +32,10 @@ export type TimelineEntry = {
   highlights?: string[];
   order?: number;
 };
+export type Workshop = { _id: string; title: string; role: string; description: string; organization?: string; date?: string; image?: Media; videoUrl?: string; order?: number };
 export type SiteSettings = {
+  workshopsTitle: string;
+  workshopsIntro: string;
   heroImage?: Media;
   heroPrimaryAction: string;
   heroSecondaryAction: string;
@@ -74,6 +77,7 @@ export type Profile = {
   socialLinks: ProofLink[];
 };
 export type Portfolio = {
+  workshops: Workshop[];
   settings: SiteSettings;
   profile: Profile;
   projects: CaseStudy[];

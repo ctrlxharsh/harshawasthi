@@ -7,6 +7,7 @@ import {
   useAnimate,
   useReducedMotion,
   useScroll,
+  useTransform,
 } from "motion/react";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { ArrowDown, ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
@@ -16,7 +17,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MotionProvider, Reveal, HoverCard } from "@/components/Animated";
+import { MotionProvider, Reveal, HoverCard, AwardWave, useHydrated } from "@/components/Animated";
+import { Workshops } from "@/components/Workshops";
 import BlurText from "@/components/BlurText";
 import type { CaseStudy, Media, Portfolio, TimelineEntry } from "@/lib/types";
 import { httpUrl, selectionFromParams } from "@/lib/links";
@@ -94,63 +96,75 @@ function Card({
   newlyShown?: boolean;
 }) {
   const cover = coverFor(item);
+  const mounted = useHydrated();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "end start"],
+  });
+  const coverY = useTransform(scrollYProgress, [0, 0.35, 1], [24, 0, kind === "project" ? -8 : 0]);
+  const coverScale = useTransform(scrollYProgress, [0, 0.35, 1], [0.97, 1, kind === "project" ? 0.97 : 1]);
+  const coverOpacity = useTransform(scrollYProgress, [0, 0.3, 1], [0.8, 1, kind === "project" ? 0.85 : 1]);
   return (
-    <Reveal className="card-shell" delay={delay} enter={newlyShown}>
-      <HoverCard>
-        <a
-          className={compact ? "work-card work-card-compact" : "work-card"}
-          href={`/?${kind}=${encodeURIComponent(item.slug)}`}
-          onClick={(event) => {
-            if (
-              event.metaKey ||
-              event.ctrlKey ||
-              event.shiftKey ||
-              event.altKey ||
-              event.button !== 0
-            )
-              return;
-            event.preventDefault();
-            onOpen({ kind, slug: item.slug }, event.currentTarget);
-          }}
-        >
-          {!compact && (
-            <div className="card-art-frame">
-              <div className={`card-art art-${item.accent || "blue"}`}>
-                {cover?.url ? (
-                  <img src={cover.url} alt={cover.alt || ""} loading="lazy" />
-                ) : (
-                  <>
-                    <div className="art-ring art-ring-one" />
-                    <div className="art-ring art-ring-two" />
-                    <span className="art-mark">
-                      {kind === "research" ? "R" : "P"}
-                      <small> / {String(index + 1).padStart(2, "0")}</small>
-                    </span>
-                    <span className="art-sub">{item.category}</span>
-                  </>
-                )}
+    <div ref={cardRef} className="card-shell">
+      <Reveal delay={delay} enter={newlyShown}>
+        <HoverCard>
+          <a
+            className={compact ? "work-card work-card-compact" : "work-card"}
+            href={`/?${kind}=${encodeURIComponent(item.slug)}`}
+            onClick={(event) => {
+              if (
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                event.button !== 0
+              )
+                return;
+              event.preventDefault();
+              onOpen({ kind, slug: item.slug }, event.currentTarget);
+            }}
+          >
+            {!compact && (
+              <motion.div className="card-art-frame" style={mounted && reduced === false ? { y: coverY, scale: coverScale, opacity: coverOpacity } : undefined}>
+                <div className={`card-art art-${item.accent || "blue"}`}>
+                  {cover?.url ? (
+                    <img src={cover.url} alt={cover.alt || ""} loading="lazy" />
+                  ) : (
+                    <>
+                      <div className="art-ring art-ring-one" />
+                      <div className="art-ring art-ring-two" />
+                      <span className="art-mark">
+                        {kind === "research" ? "R" : "P"}
+                        <small> / {String(index + 1).padStart(2, "0")}</small>
+                      </span>
+                      <span className="art-sub">{item.category}</span>
+                    </>
+                  )}
+                </div>
+                <span className="card-arrow" aria-hidden="true">
+                  <ArrowUpRight size={19} strokeWidth={1.7} />
+                </span>
+              </motion.div>
+            )}
+            <div className="card-copy">
+              <div className="card-meta">
+                <span>{item.category}</span>
+                <span>{item.date}</span>
               </div>
-              <span className="card-arrow" aria-hidden="true">
-                <ArrowUpRight size={19} strokeWidth={1.7} />
+              <h3>{item.title}</h3>
+              {item.venue && <p className="card-venue">{item.venue}</p>}
+              <p>{item.summary}</p>
+              <span className="card-link">
+                Explore {kind === "research" ? "research" : "project"}{" "}
+                <ArrowRight size={15} />
               </span>
             </div>
-          )}
-          <div className="card-copy">
-            <div className="card-meta">
-              <span>{item.category}</span>
-              <span>{item.date}</span>
-            </div>
-            <h3>{item.title}</h3>
-            {item.venue && <p className="card-venue">{item.venue}</p>}
-            <p>{item.summary}</p>
-            <span className="card-link">
-              Explore {kind === "research" ? "research" : "project"}{" "}
-              <ArrowRight size={15} />
-            </span>
-          </div>
-        </a>
-      </HoverCard>
-    </Reveal>
+          </a>
+        </HoverCard>
+      </Reveal>
+    </div>
   );
 }
 
@@ -182,10 +196,22 @@ function Timeline({
   experience?: boolean;
 }) {
   const track = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 701px)");
+    const update = () => setDesktop(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
   const { scrollYProgress } = useScroll({
     target: track,
     offset: ["start 82%", "end 64%"],
   });
+
+  const logoY = useTransform(scrollYProgress, [0, 1], [10, -10]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [4, -4]);
 
   return (
     <div
@@ -207,12 +233,13 @@ function Timeline({
             className="timeline-row"
             key={entry._id}
             initial={false}
-            whileInView={{ x: [-16, 0], opacity: [0.55, 1] }}
+            whileInView={undefined}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
             {experience && (
               <motion.span
+                style={experience && desktop && reduced === false ? { y: logoY } : undefined}
                 className={`timeline-logo ${logo === organizationLogos["Andromeida Maritime Solutions"] ? "timeline-logo-dark" : ""}`}
                 aria-hidden="true"
                 initial={false}
@@ -231,7 +258,7 @@ function Timeline({
                 )}
               </motion.span>
             )}
-            <div className="timeline-main">
+            <motion.div className="timeline-main" style={desktop && reduced === false ? { y: contentY } : undefined}>
               <h3>{entry.title}</h3>
               <p className="timeline-org">{entry.organization}</p>
               {entry.description && <p>{entry.description}</p>}
@@ -242,8 +269,8 @@ function Timeline({
                   ))}
                 </ul>
               )}
-            </div>
-            <div className="timeline-date">{entry.date}</div>
+            </motion.div>
+            <motion.div className="timeline-date" style={desktop && reduced === false ? { y: contentY } : undefined}>{entry.date}</motion.div>
           </motion.div>
         );
       })}
@@ -258,6 +285,11 @@ export function PortfolioPage({
   data: Portfolio;
   initial: Selection | null;
 }) {
+  const aboutRef = useRef<HTMLElement>(null);
+  const mounted = useHydrated();
+  const { scrollYProgress: aboutProgress } = useScroll({ target: aboutRef, offset: ["start end", "end start"] });
+  const aboutImageY = useTransform(aboutProgress, [0, 1], [10, -10]);
+  const aboutCopyY = useTransform(aboutProgress, [0, 1], [4, -4]);
   const [selection, setSelection] = useState<Selection | null>(initial);
   const [menu, setMenu] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -537,8 +569,8 @@ export function PortfolioPage({
 
         <section className="section experience-section" id="experience">
           <div className="container split-section">
-            <Reveal>
-              <div className="sticky-heading">
+            <Reveal className="sticky-heading">
+              <div>
                 <span className="section-kicker">
                   {data.settings.experienceLabel}
                 </span>
@@ -553,7 +585,7 @@ export function PortfolioPage({
         <section className="section education-section" id="journey">
           <div className="container">
             <div className="education-grid">
-              <div>
+              <div className="sticky-heading education-heading">
                 <span className="section-kicker">
                   {data.settings.educationLabel}
                 </span>
@@ -632,19 +664,20 @@ export function PortfolioPage({
           </div>
         </section>
 
-        <section className="section about-section" id="about">
+        <section className="section about-section" id="about" ref={aboutRef}>
           <div className="container">
             <div className="about-grid">
-              <div className="about-intro">
+              <div className="about-intro sticky-heading">
                 <span className="section-kicker">
                   {data.settings.aboutLabel}
                 </span>
                 <h2>{data.settings.aboutTitle}</h2>
               </div>
-              <div className="about-copy">
+              <motion.div className="about-copy about-parallax" style={mounted && reduced === false ? { y: aboutCopyY } : undefined}>
                 {data.profile.portrait?.url && (
-                  <img
-                    className="about-portrait"
+                  <motion.img
+                    style={mounted && reduced === false ? { y: aboutImageY } : undefined}
+                    className="about-portrait about-parallax"
                     src={data.profile.portrait.url}
                     alt={data.profile.portrait.alt || data.profile.name}
                     loading="lazy"
@@ -654,8 +687,7 @@ export function PortfolioPage({
                 <a className="inline-link" href="#contact">
                   Get in touch <ArrowUpRight size={17} />
                 </a>
-              </div>
-            </div>
+              </motion.div>
             <div className="skills-grid" id="skills">
               {data.skills.map((skill) => (
                 <div key={skill._id}>
@@ -663,6 +695,7 @@ export function PortfolioPage({
                   <p>{skill.description}</p>
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </section>
@@ -678,21 +711,23 @@ export function PortfolioPage({
               />
             </Reveal>
             <div className="awards-grid">
-              {data.awards.map((award) => (
-                <Reveal
+              {data.awards.map((award, index) => (
+                <AwardWave
                   className="award"
                   key={award._id}
-                  delay={(data.awards.indexOf(award) % 3) * 0.06}
+                  index={index}
                 >
                   <span className="award-date">{award.date}</span>
                   <h3>{award.title}</h3>
                   <p>{award.organization}</p>
                   <span>{award.description}</span>
-                </Reveal>
+                </AwardWave>
               ))}
             </div>
           </div>
         </section>
+
+        <Workshops items={data.workshops} title={data.settings.workshopsTitle} intro={data.settings.workshopsIntro} />
 
         <section className="contact-section" id="contact">
           <div className="container contact-inner">

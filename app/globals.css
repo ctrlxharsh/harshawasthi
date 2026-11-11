@@ -369,7 +369,7 @@ img {
   position: relative;
 }
 .card-art {
-  height: 245px;
+  aspect-ratio: 16 / 9;
   position: relative;
   overflow: hidden;
   border-radius: 15px;
@@ -379,15 +379,6 @@ img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transition: transform 0.35s ease;
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .work-card:hover .card-art img {
-    transform: scale(1.055);
-  }
-}
-.research-grid .card-art {
-  height: 290px;
 }
 .art-blue {
   background: #dce9fc;
@@ -640,9 +631,12 @@ img {
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1.18fr;
-  gap: 90px;
-  padding-bottom: 100px;
+  column-gap: 90px;
+  row-gap: 100px;
 }
+.about-intro { grid-row: span 2; align-self: start; }
+.about-grid .skills-grid { grid-column: 2; }
+.education-heading { align-self: start; }
 .about-intro h2 {
   font-size: clamp(54px, 6vw, 87px);
   line-height: 0.99;
@@ -1065,10 +1059,6 @@ img {
     grid-template-columns: 1fr;
     gap: 38px;
   }
-  .research-grid .card-art,
-  .card-art {
-    height: 240px;
-  }
   .card-copy h3 {
     font-size: 22px;
   }
@@ -1095,8 +1085,9 @@ img {
     grid-column: 2;
   }
   .about-grid {
-    padding-bottom: 70px;
+    padding-bottom: 0;
   }
+  .about-grid .skills-grid { margin-top: 70px; }
   .about-copy {
     padding-top: 25px;
   }
@@ -1177,4 +1168,32 @@ img {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.workshops-section { background: #fff; }
+.workshops-stage { padding: 110px 0; }
+.workshops-track { display: grid; gap: 28px; }
+.workshop-card img, .workshop-card video, .workshop-art { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 14px; display: block; }
+.workshop-art { background: #edf2fa; color: #254781; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; }
+.workshop-art span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.workshop-art strong { font: 500 clamp(24px, 3vw, 42px)/1.1 var(--font-display), sans-serif; letter-spacing: -.04em; }
+.workshop-meta { margin-top: 20px; color: #4b659d; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.workshop-card h3 { margin-top: 12px; font-size: 25px; }
+.workshop-card p { margin-top: 10px; color: var(--muted); line-height: 1.65; }
+.workshop-card .workshop-org { color: #354b72; font-size: 13px; }
+:is(.workshops-check, .workshops-pinned) .workshops-track { display: flex; }
+:is(.workshops-check, .workshops-pinned) .workshop-card { flex: 0 0 46%; min-width: 0; }
+.workshops-pinned .workshops-stage { position: sticky; top: 0; min-height: 100svh; display: flex; align-items: center; }
+.workshops-stage > .container { width: 100%; }
+.workshops-pinned .workshops-window { overflow: hidden; }
+.workshops-indicator { display: flex; align-items: center; gap: 18px; margin: -20px 0 24px; color: var(--muted); font-size: 11px; }
+.workshops-indicator > div { width: 100px; height: 2px; background: var(--line); }
+.workshops-indicator div span { display: block; height: 100%; background: var(--blue); transform-origin: left; }
+@media (max-width: 700px) {
+  .workshops-stage { padding: 65px 0; }
+  :is(.workshops-check, .workshops-pinned) .workshop-card { flex-basis: 88%; }
+}
+
+@media (max-width: 700px) {
+  .about-parallax { transform: none !important; }
 }

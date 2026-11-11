@@ -38,6 +38,7 @@ async function main() {
         proofLinks: keys(proofLinks || []),
       })),
     ),
+    ...seed.workshops.map((item) => ({ ...item, _type: "workshop" })),
     ...(["experience", "education", "awards", "skills"] as const).flatMap(
       (kind) =>
         seed[kind].map((item) => ({

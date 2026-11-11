@@ -21,6 +21,7 @@ const portfolioQuery = defineQuery(`{
   "experience": *[_type == "experience"] | order(order asc) { ..., "logo": logo { "url": asset->url } },
   "education": *[_type == "education"] | order(order asc),
   "awards": *[_type == "award"] | order(order asc),
+  "workshops": *[_type == "workshop"] | order(order asc) { ..., "image": image { ..., "url": asset->url } },
   "skills": *[_type == "skill"] | order(order asc)
 }`);
 
@@ -32,6 +33,7 @@ export async function getPortfolio(): Promise<Portfolio> {
     if (!portfolio?.settings || !portfolio?.profile) return seed;
     return {
       ...portfolio,
+      workshops: portfolio.workshops?.length ? portfolio.workshops : seed.workshops,
       settings: { ...seed.settings, ...portfolio.settings },
     } as Portfolio;
   } catch (error) {

@@ -328,7 +328,15 @@ const entry = (
 });
 
 export const seed: Portfolio = {
+  workshops: [
+    { _id: "workshop-rc-car", title: "RC Car Workshop", role: "Workshop instructor", description: "A practical workshop for more than 170 participants covering chassis assembly, motor-driver integration, control electronics and testing.", videoUrl: "/workshops/rc-car-workshop.mp4", order: 1 },
+    { _id: "workshop-python-robotics", title: "Python for Robotics", role: "Guest lecturer", description: "Taught Python libraries as part of a broader introduction to robotics workshop.", order: 2 },
+    { _id: "workshop-ai-glocal", title: "Introduction to AI", role: "Guest lecturer", organization: "Glocal University", description: "Introduced the basic concepts of artificial intelligence to workshop participants.", order: 3 },
+    { _id: "workshop-rc-glocal", title: "Hands-on RC Cars", role: "Workshop instructor", organization: "Glocal University", description: "Taught the concepts behind RC cars and guided students as they built their own.", order: 4 },
+  ],
   settings: {
+    workshopsTitle: "Workshops & teaching.",
+    workshopsIntro: "Sharing ideas and building together.",
     heroPrimaryAction: "Explore my work",
     heroSecondaryAction: "A little about me",
     contactAction: "Say hello",

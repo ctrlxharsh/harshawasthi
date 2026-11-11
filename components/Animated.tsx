@@ -1,7 +1,16 @@
 "use client";
 
-import { motion, MotionConfig, useReducedMotion } from "motion/react";
+import { motion, MotionConfig, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
+
+const subscribe = () => () => {};
+const isClient = () => true;
+const isServer = () => false;
+
+export function useHydrated() {
+  return useSyncExternalStore(subscribe, isClient, isServer);
+}
 
 export function MotionProvider({ children }: { children: ReactNode }) {
   return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
@@ -56,4 +65,19 @@ export function HoverCard({
       {children}
     </motion.div>
   );
+}
+
+export function AwardWave({ children, className, index }: {
+  children: ReactNode;
+  className?: string;
+  index: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const mounted = useHydrated();
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "center center"] });
+  const start = (index % 3) * 0.08;
+  const y = useTransform(scrollYProgress, [start, start + 0.7, 1], [16, 0, 0]);
+  const opacity = useTransform(scrollYProgress, [start, start + 0.7, 1], [0.82, 1, 1]);
+  return <motion.div ref={ref} className={className} style={mounted && reduced === false ? { y, opacity } : undefined}>{children}</motion.div>;
 }

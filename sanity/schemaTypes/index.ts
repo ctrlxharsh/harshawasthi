@@ -33,6 +33,8 @@ const media = defineType({
   ],
 });
 const settingsFields = [
+  ["workshopsTitle", "Workshops heading"],
+  ["workshopsIntro", "Workshops introduction"],
   ["heroPrimaryAction", "Hero primary action"],
   ["heroSecondaryAction", "Hero secondary action"],
   ["contactAction", "Contact action"],
@@ -233,7 +235,22 @@ function timeline(name: string, title: string) {
   });
 }
 
+const workshop = defineType({
+  name: "workshop", title: "Workshops & teaching", type: "document",
+  fields: [
+    defineField({ name: "title", type: "string", validation: rule => rule.required() }),
+    defineField({ name: "role", type: "string", options: { list: ["Guest lecturer", "Workshop instructor"] }, validation: rule => rule.required() }),
+    defineField({ name: "description", type: "text", validation: rule => rule.required() }),
+    defineField({ name: "image", type: "media" }),
+    defineField({ name: "videoUrl", title: "Video URL or site path", type: "string" }),
+    defineField({ name: "organization", type: "string" }),
+    defineField({ name: "date", type: "string" }),
+    defineField({ name: "order", type: "number" }),
+  ],
+});
+
 export const schemaTypes = [
+  workshop,
   link,
   media,
   settings,
