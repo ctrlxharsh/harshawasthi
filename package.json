@@ -11,6 +11,7 @@
     "import-content": "sanity exec scripts/import-content.ts --with-user-token",
     "check": "tsx scripts/check.ts",
     "build:cloudflare": "opennextjs-cloudflare build",
+    "build:vinext": "npm run build:cloudflare",
     "preview:cloudflare": "opennextjs-cloudflare preview",
     "upload:cloudflare": "opennextjs-cloudflare upload"
   },
