@@ -10,7 +10,7 @@ import {
   useTransform,
 } from "motion/react";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
-import { ArrowDown, ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -86,6 +86,7 @@ function Card({
   delay = 0,
   compact = false,
   newlyShown = false,
+  showcase = false,
 }: {
   item: CaseStudy;
   kind: Selection["kind"];
@@ -94,6 +95,7 @@ function Card({
   delay?: number;
   compact?: boolean;
   newlyShown?: boolean;
+  showcase?: boolean;
 }) {
   const cover = coverFor(item);
   const mounted = useHydrated();
@@ -108,7 +110,7 @@ function Card({
   const coverOpacity = useTransform(scrollYProgress, [0, 0.3, 1], [0.8, 1, kind === "project" ? 0.85 : 1]);
   return (
     <div ref={cardRef} className="card-shell">
-      <Reveal delay={delay} enter={newlyShown}>
+      <Reveal delay={delay} enter={newlyShown} className={showcase ? "showcase-card" : undefined}>
         <HoverCard>
           <a
             className={compact ? "work-card work-card-compact" : "work-card"}
@@ -127,7 +129,7 @@ function Card({
             }}
           >
             {!compact && (
-              <motion.div className="card-art-frame" style={mounted && reduced === false ? { y: coverY, scale: coverScale, opacity: coverOpacity } : undefined}>
+              <motion.div className="card-art-frame" style={!showcase && mounted && reduced === false ? { y: coverY, scale: coverScale, opacity: coverOpacity } : undefined}>
                 <div className={`card-art art-${item.accent || "blue"}`}>
                   {cover?.url ? (
                     <img src={cover.url} alt={cover.alt || ""} loading="lazy" />
@@ -297,7 +299,16 @@ export function PortfolioPage({
   const trigger = useRef<HTMLElement | null>(null);
   const moreProjects = useRef<HTMLButtonElement>(null);
   const projectsGrid = useRef<HTMLDivElement>(null);
-  const focusMoreProject = useRef(false);
+  const showcaseSection = useRef<HTMLDivElement>(null);
+  const showcaseStage = useRef<HTMLDivElement>(null);
+  const showcaseWindow = useRef<HTMLDivElement>(null);
+  const showcaseTrack = useRef<HTMLDivElement>(null);
+  const additionalHeading = useRef<HTMLHeadingElement>(null);
+  const [showcaseDistance, setShowcaseDistance] = useState(0);
+  const [showcaseFits, setShowcaseFits] = useState(false);
+  const [desktop, setDesktop] = useState(false);
+  const { scrollYProgress: projectsProgress } = useScroll({ target: showcaseSection, offset: ["start start", "end end"] });
+  const projectsX = useTransform(projectsProgress, [0, 1], [0, -showcaseDistance]);
   const researchHeading = useRef<HTMLElement>(null);
   const projectsHeading = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
@@ -348,11 +359,43 @@ export function PortfolioPage({
   );
 
   useEffect(() => {
-    if (expanded && focusMoreProject.current) {
-      focusMoreProject.current = false;
-      projectsGrid.current?.querySelectorAll("a")[4]?.focus();
-    }
-  }, [expanded]);
+    const stage = showcaseStage.current, windowEl = showcaseWindow.current, track = showcaseTrack.current;
+    if (!stage || !windowEl || !track) return;
+    const measure = () => {
+      setDesktop(window.innerWidth > 1000);
+      setShowcaseDistance(Math.max(0, track.scrollWidth - windowEl.clientWidth));
+      setShowcaseFits(stage.scrollHeight <= window.innerHeight);
+    };
+    const observer = new ResizeObserver(measure);
+    [stage, windowEl, track, ...Array.from(track.children)].forEach((element) => observer.observe(element));
+    window.addEventListener("resize", measure);
+    measure();
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, [data.projects]);
+
+  const pinned = mounted && reduced === false && desktop && showcaseFits && showcaseDistance > 0;
+  const moveShowcase = (index: number) => {
+    const track = showcaseTrack.current, windowEl = showcaseWindow.current, section = showcaseSection.current;
+    if (!track || !windowEl || !section) return;
+    const child = track.children[Math.max(0, Math.min(index, track.children.length - 1))] as HTMLElement | undefined;
+    if (!child) return;
+    const left = Math.min(child.offsetLeft, showcaseDistance);
+    if (pinned) window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY + left, behavior: "smooth" });
+    else windowEl.scrollTo({ left, behavior: reduced ? "instant" : "smooth" });
+  };
+  const moveBy = (direction: number) => {
+    const track = showcaseTrack.current, windowEl = showcaseWindow.current;
+    if (!track || !windowEl) return;
+    const current = pinned ? projectsProgress.get() * showcaseDistance : windowEl.scrollLeft;
+    const positions = Array.from(track.children, (child) => Math.min((child as HTMLElement).offsetLeft, showcaseDistance));
+    const index = direction > 0 ? positions.findIndex((position) => position > current + 4) : positions.findLastIndex((position) => position < current - 4);
+    if (index >= 0) moveShowcase(index);
+  };
+  useEffect(() => {
+    if (!expanded) return;
+    additionalHeading.current?.scrollIntoView({ behavior: reduced ? "instant" : "smooth", block: "start" });
+    additionalHeading.current?.focus({ preventScroll: true });
+  }, [expanded, reduced]);
 
   useEffect(() => {
     const update = () => {
@@ -602,66 +645,31 @@ export function PortfolioPage({
           ref={projectsHeading}
           tabIndex={-1}
         >
-          <div className="container">
-            <Reveal>
-              <SectionHeading
-                label={data.settings.projectsLabel}
-                title={data.settings.projectsTitle}
-                intro={data.settings.projectsIntro}
-              />
-            </Reveal>
-            <div className="project-grid" id="all-projects" ref={projectsGrid}>
-              {(expanded ? orderedProjects : orderedProjects.slice(0, 4)).map(
-                (item, index) => (
-                  <Card
-                    key={item._id}
-                    item={item}
-                    kind="project"
-                    index={index}
-                    onOpen={open}
-                    newlyShown={index >= 4}
-                    delay={index >= 4 ? Math.min(index - 4, 5) * 0.05 : 0}
-                  />
-                ),
-              )}
-            </div>
-            {remainingProjects.length > 0 && (
-              <>
-                <div className="projects-actions">
-                  <button
-                    className="pill pill-outline"
-                    type="button"
-                    aria-controls="all-projects"
-                    aria-expanded={expanded}
-                    ref={moreProjects}
-                    onClick={() => {
-                      focusMoreProject.current = !expanded;
-                      setExpanded(!expanded);
-                    }}
-                  >
-                    {expanded
-                      ? data.settings.archiveCollapseAction
-                      : "Show more projects"}
-                    <ArrowDown size={16} className={expanded ? "turned" : ""} />
-                  </button>
-                </div>
-                <noscript>
-                  <style>{".projects-actions { display: none }"}</style>
-                  <div className="project-grid projects-actions-fallback">
-                    {remainingProjects.map((item, index) => (
-                      <Card
-                        key={item._id}
-                        item={item}
-                        kind="project"
-                        index={index + 4}
-                        onOpen={open}
-                      />
-                    ))}
-                  </div>
-                </noscript>
-              </>
-            )}
+          <div ref={showcaseSection} className={pinned ? "projects-showcase projects-pinned" : "projects-showcase"} style={pinned ? { height: `calc(100svh + ${showcaseDistance}px)` } : undefined}>
+            <div ref={showcaseStage} className="projects-stage"><div className="container">
+              <SectionHeading label={data.settings.projectsLabel} title={data.settings.projectsTitle} intro={data.settings.projectsIntro} />
+              <div className="projects-navigation">
+                <span>{pinned ? "Scroll to explore" : "Swipe to explore"}</span>
+                {pinned && <div className="projects-progress"><motion.span style={{ scaleX: projectsProgress }} /></div>}
+                <button type="button" aria-label="Previous project" onClick={() => moveBy(-1)}><ArrowLeft size={18} /></button>
+                <button type="button" aria-label="Next project" onClick={() => moveBy(1)}><ArrowRight size={18} /></button>
+              </div>
+              <div className="projects-window" ref={showcaseWindow}>
+                <motion.div className="projects-track" ref={showcaseTrack} style={pinned ? { x: projectsX } : undefined} onFocusCapture={(event) => {
+                  const child = Array.from(event.currentTarget.children).findIndex((element) => element.contains(event.target as Node));
+                  if (child >= 0) moveShowcase(child);
+                }}>
+                  {orderedProjects.slice(0, 4).map((item, index) => <Card key={item._id} item={item} kind="project" index={index} onOpen={open} showcase />)}
+                  {remainingProjects.length > 0 && <div className="projects-more-panel"><span>{remainingProjects.length} more {remainingProjects.length === 1 ? "project" : "projects"}</span><button ref={moreProjects} className="pill pill-outline" type="button" aria-controls="all-projects" aria-expanded={expanded} onClick={() => setExpanded(true)}>View more projects <ArrowRight size={16} /></button></div>}
+                </motion.div>
+              </div>
+            </div></div>
           </div>
+          {expanded && <div className="container projects-archive" id="all-projects" ref={projectsGrid}>
+            <div className="projects-archive-heading"><h3 ref={additionalHeading} tabIndex={-1}>More projects</h3><button className="pill pill-outline" type="button" onClick={() => { setExpanded(false); moveShowcase(4); moreProjects.current?.focus({ preventScroll: true }); }}>Show fewer projects <ArrowDown size={16} className="turned" /></button></div>
+            <div className="project-grid">{remainingProjects.map((item, index) => <Card key={item._id} item={item} kind="project" index={index + 4} onOpen={open} newlyShown delay={Math.min(index, 5) * 0.04} />)}</div>
+          </div>}
+          <noscript><div className="container project-grid projects-actions-fallback">{remainingProjects.map((item, index) => <Card key={item._id} item={item} kind="project" index={index + 4} onOpen={open} />)}</div></noscript>
         </section>
 
         <section className="section about-section" id="about" ref={aboutRef}>
