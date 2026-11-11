@@ -1171,7 +1171,7 @@ img {
 }
 
 .workshops-section { background: #fff; }
-.workshops-stage { padding: 110px 0; }
+.workshops-stage { padding: clamp(28px, 5vh, 70px) 0; }
 .workshops-track { display: grid; gap: 28px; }
 .workshop-card img, .workshop-card video, .workshop-art { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 14px; display: block; }
 .workshop-art { background: #edf2fa; color: #254781; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -1183,6 +1183,8 @@ img {
 .workshop-card .workshop-org { color: #354b72; font-size: 13px; }
 :is(.workshops-check, .workshops-pinned) .workshops-track { display: flex; }
 :is(.workshops-check, .workshops-pinned) .workshop-card { flex: 0 0 46%; min-width: 0; }
+:is(.workshops-check, .workshops-pinned) .workshop-card :is(img, video, .workshop-art) { max-height: 32vh; }
+:is(.workshops-check, .workshops-pinned) .section-heading { margin-bottom: 30px; }
 .workshops-pinned .workshops-stage { position: sticky; top: 0; min-height: 100svh; display: flex; align-items: center; }
 .workshops-stage > .container { width: 100%; }
 .workshops-pinned .workshops-window { overflow: hidden; }
@@ -1191,6 +1193,7 @@ img {
 .workshops-indicator div span { display: block; height: 100%; background: var(--blue); transform-origin: left; }
 @media (max-width: 700px) {
   .workshops-stage { padding: 65px 0; }
+  :is(.workshops-check, .workshops-pinned) .workshop-card :is(img, video, .workshop-art) { max-height: none; }
   :is(.workshops-check, .workshops-pinned) .workshop-card { flex-basis: 88%; }
 }
 
