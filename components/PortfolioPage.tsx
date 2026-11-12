@@ -24,6 +24,7 @@ import type { CaseStudy, Media, Portfolio, TimelineEntry } from "@/lib/types";
 import { httpUrl, selectionFromParams } from "@/lib/links";
 
 type Selection = { kind: "project" | "research"; slug: string };
+const PROJECT_SCROLL_FACTOR = 1.3;
 
 const heroTransition = { duration: 0.48, ease: [0.22, 1, 0.36, 1] } as const;
 
@@ -380,7 +381,7 @@ export function PortfolioPage({
     const child = track.children[Math.max(0, Math.min(index, track.children.length - 1))] as HTMLElement | undefined;
     if (!child) return;
     const left = Math.min(child.offsetLeft, showcaseDistance);
-    if (pinned) window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY + left, behavior: "smooth" });
+    if (pinned) window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY + left * PROJECT_SCROLL_FACTOR, behavior: "smooth" });
     else windowEl.scrollTo({ left, behavior: reduced ? "instant" : "smooth" });
   };
   const moveBy = (direction: number) => {
@@ -645,7 +646,7 @@ export function PortfolioPage({
           ref={projectsHeading}
           tabIndex={-1}
         >
-          <div ref={showcaseSection} className={pinned ? "projects-showcase projects-pinned" : "projects-showcase"} style={pinned ? { height: `calc(100svh + ${showcaseDistance}px)` } : undefined}>
+          <div ref={showcaseSection} className={pinned ? "projects-showcase projects-pinned" : "projects-showcase"} style={pinned ? { height: `calc(100svh + ${showcaseDistance * PROJECT_SCROLL_FACTOR}px)` } : undefined}>
             <div ref={showcaseStage} className="projects-stage"><div className="container">
               <SectionHeading label={data.settings.projectsLabel} title={data.settings.projectsTitle} intro={data.settings.projectsIntro} />
               <div className="projects-navigation">
